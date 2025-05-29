@@ -1,9 +1,10 @@
 use crate::model::Transfer;
+use anyhow::Context;
 use rand::{distributions::Alphanumeric, Rng};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 pub trait TransferGenerator {
-    fn generate(&self, count: usize) -> Vec<Transfer>;
+    fn generate(&self, count: usize) -> anyhow::Result<Vec<Transfer>>;
 }
 
 #[derive(Debug, Clone)]
@@ -40,11 +41,14 @@ impl Default for DefaultTransferGenerator {
 }
 
 impl TransferGenerator for DefaultTransferGenerator {
-    fn generate(&self, count: usize) -> Vec<Transfer> {
+    fn generate(&self, count: usize) -> anyhow::Result<Vec<Transfer>> {
         let mut rng = rand::thread_rng();
-        let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .context("sth wrong with system time (< UNIX_EPOCH)")?
+            .as_secs();
 
-        (0..count)
+        let res = (0..count)
             .map(|_| {
                 let from = rand_address(&mut rng);
                 let to = rand_address(&mut rng);
@@ -60,7 +64,8 @@ impl TransferGenerator for DefaultTransferGenerator {
                     usd_price,
                 }
             })
-            .collect()
+            .collect();
+        Ok(res)
     }
 }
 
@@ -71,4 +76,8 @@ fn rand_address(rng: &mut impl Rng) -> String {
         .map(char::from)
         .collect();
     format!("0x{}", suffix)
+}
+
+pub fn generate_transfers(count: usize) -> anyhow::Result<Vec<Transfer>> {
+    Ok(DefaultTransferGenerator::default().generate(count)?)
 }
