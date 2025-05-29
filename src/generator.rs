@@ -1,7 +1,8 @@
 use crate::model::Transfer;
 use anyhow::Context;
-use rand::{distributions::Alphanumeric, Rng};
+use rand::{distributions::Alphanumeric, seq::SliceRandom, Rng};
 use std::time::{SystemTime, UNIX_EPOCH};
+use uuid::Uuid;
 
 pub trait TransferGenerator {
     fn generate(&self, count: usize) -> anyhow::Result<Vec<Transfer>>;
@@ -48,24 +49,30 @@ impl TransferGenerator for DefaultTransferGenerator {
             .context("sth wrong with system time (< UNIX_EPOCH)")?
             .as_secs();
 
-        let res = (0..count)
-            .map(|_| {
-                let from = rand_address(&mut rng);
-                let to = rand_address(&mut rng);
+        let address_pool = generate_adress_pool(&mut rng, 1000);
+
+        let transfers = (0..count)
+            .filter_map(|_| {
+                let from = address_pool.choose(&mut rng)?.clone();
+                let to = address_pool.choose(&mut rng)?.clone();
+                if from == to {
+                    return None;
+                }
                 let amount = rng.gen_range(self.config.min_amount..self.config.max_amount);
                 let usd_price = rng.gen_range(self.config.min_price..self.config.max_price);
                 let ts = now - rng.gen_range(0..self.config.max_age_secs);
-
-                Transfer {
+                Some(Transfer {
+                    id: Uuid::new_v4(),
                     ts,
                     from,
                     to,
                     amount,
                     usd_price,
-                }
+                })
             })
+            .take(count)
             .collect();
-        Ok(res)
+        Ok(transfers)
     }
 }
 
@@ -76,6 +83,10 @@ fn rand_address(rng: &mut impl Rng) -> String {
         .map(char::from)
         .collect();
     format!("0x{}", suffix)
+}
+
+fn generate_adress_pool(rng: &mut impl Rng, size: usize) -> Vec<String> {
+    (0..size).map(|_| rand_address(rng)).collect()
 }
 
 pub fn generate_transfers(count: usize) -> anyhow::Result<Vec<Transfer>> {

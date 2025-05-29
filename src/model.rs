@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Transfer {
+    pub id: Uuid,
     pub ts: u64,
     pub from: String,
     pub to: String,
