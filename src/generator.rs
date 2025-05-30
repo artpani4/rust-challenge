@@ -1,42 +1,21 @@
+use crate::config::GeneratorConfig;
 use crate::model::Transfer;
 use anyhow::Context;
 use rand::{distributions::Alphanumeric, seq::SliceRandom, Rng};
 use std::time::{SystemTime, UNIX_EPOCH};
 use uuid::Uuid;
-
 pub trait TransferGenerator {
     fn generate(&self, count: usize) -> anyhow::Result<Vec<Transfer>>;
 }
 
-#[derive(Debug, Clone)]
-pub struct TransferGenConfig {
-    pub min_amount: f64,
-    pub max_amount: f64,
-    pub min_price: f64,
-    pub max_price: f64,
-    pub max_age_secs: u64,
-}
-
-impl Default for TransferGenConfig {
-    fn default() -> Self {
-        Self {
-            min_amount: 1.0,
-            max_amount: 1000.0,
-            min_price: 0.1,
-            max_price: 2.0,
-            max_age_secs: 86_400 * 30,
-        }
-    }
-}
-
 pub struct DefaultTransferGenerator {
-    pub config: TransferGenConfig,
+    pub config: GeneratorConfig,
 }
 
 impl Default for DefaultTransferGenerator {
     fn default() -> Self {
         Self {
-            config: TransferGenConfig::default(),
+            config: GeneratorConfig::default(),
         }
     }
 }

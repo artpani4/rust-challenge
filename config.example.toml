@@ -1,0 +1,6 @@
+[generator]
+min_amount = 5.0
+max_amount = 999.9
+min_price = 0.25
+max_price = 3.5
+max_age_secs = 604800

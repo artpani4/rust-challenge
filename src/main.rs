@@ -1,18 +1,21 @@
-mod generator;
-mod model;
-mod pipeline;
-// mod storage;
 use anyhow::Result;
-use generator::generate_transfers;
-use pipeline::calculate_user_stats;
+use rust_challenge::config::GlobalConfig;
+use rust_challenge::generator::{DefaultTransferGenerator, TransferGenerator};
+use rust_challenge::pipeline::calculate_user_stats;
 
 fn main() -> Result<()> {
-    let transfers = generate_transfers(10_000)?;
+    let config = GlobalConfig::load();
 
+    let generator = DefaultTransferGenerator {
+        config: config.generator.clone(),
+    };
+
+    let transfers = generator.generate(10_000)?;
     let stats = calculate_user_stats(&transfers);
 
     for stat in stats.iter().take(10) {
         println!("{:?}", stat);
     }
+
     Ok(())
 }
