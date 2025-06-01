@@ -1,4 +1,5 @@
 use crate::model::Transfer;
+use log::trace;
 use std::collections::HashMap;
 
 #[derive(Debug, Default)]
@@ -13,6 +14,13 @@ impl PriceTracker {
     }
 
     pub fn apply(&mut self, transfer: &Transfer) {
+        trace!(
+            "Tracking prices: buy {} -> {} @ {}",
+            transfer.from,
+            transfer.to,
+            transfer.usd_price
+        );
+
         self.buys
             .entry(transfer.to.clone())
             .or_default()

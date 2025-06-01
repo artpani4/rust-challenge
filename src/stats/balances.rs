@@ -1,4 +1,5 @@
 use crate::model::Transfer;
+use log::trace;
 use std::collections::HashMap;
 
 #[derive(Debug, Default)]
@@ -30,6 +31,14 @@ impl BalanceTracker {
             .entry(to.clone())
             .and_modify(|b| *b = b.max(to_balance))
             .or_insert(to_balance);
+
+        trace!(
+            "Updated balances: from={} -> {:.2}, to={} -> {:.2}",
+            from,
+            from_balance,
+            to,
+            to_balance
+        );
     }
 
     pub fn max_balances(&self) -> &HashMap<String, f64> {

@@ -3,7 +3,9 @@ use figment::{
     providers::{Format, Toml},
     Figment,
 };
+use log::info;
 use serde::Deserialize;
+
 #[derive(Debug, Deserialize)]
 pub struct GlobalConfig {
     pub generator: GeneratorConfig,
@@ -34,6 +36,8 @@ impl Default for GeneratorConfig {
 
 impl GlobalConfig {
     pub fn load() -> Result<Self> {
+        info!("Loading configuration from config.toml");
+
         Figment::new()
             .merge(Toml::file("config.toml"))
             .extract()
