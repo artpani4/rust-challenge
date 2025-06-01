@@ -26,8 +26,14 @@ impl TransferGenerator for DefaultTransferGenerator {
 
         let mut transfers = Vec::with_capacity(count);
         while transfers.len() < count {
-            let from = address_pool.choose(&mut rng).unwrap().clone();
-            let to = address_pool.choose(&mut rng).unwrap().clone();
+            let from = address_pool
+                .choose(&mut rng)
+                .cloned()
+                .context("No address found for 'from'")?;
+            let to = address_pool
+                .choose(&mut rng)
+                .cloned()
+                .context("No address found for 'to'")?;
             if from == to {
                 continue;
             }

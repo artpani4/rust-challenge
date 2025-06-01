@@ -1,9 +1,10 @@
-use rust_challenge::model::{Transfer, UserStats};
+use anyhow::{Context, Result};
+use rust_challenge::model::Transfer;
 use rust_challenge::stats::calculate_user_stats;
 use uuid::Uuid;
 
 #[test]
-fn calculates_correct_max_balance() {
+fn calculates_correct_max_balance() -> Result<()> {
     let transfers = vec![
         Transfer {
             id: Uuid::new_v4(),
@@ -33,8 +34,12 @@ fn calculates_correct_max_balance() {
 
     let stats = calculate_user_stats(&transfers);
 
-    let b_stats = stats.iter().find(|s| s.address == "B").unwrap();
+    let b_stats = stats
+        .iter()
+        .find(|s| s.address == "B")
+        .context("Stats for address B not found")?;
     assert_eq!(b_stats.max_balance, 25.0);
+    Ok(())
 }
 
 #[test]

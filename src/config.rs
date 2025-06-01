@@ -1,3 +1,4 @@
+use anyhow::{Context, Result};
 use figment::{
     providers::{Format, Toml},
     Figment,
@@ -32,10 +33,11 @@ impl Default for GeneratorConfig {
 }
 
 impl GlobalConfig {
-    pub fn load() -> Self {
+    pub fn load() -> Result<Self> {
         Figment::new()
             .merge(Toml::file("config.toml"))
             .extract()
-            .expect("Failed to load config!!")
+            .map_err(anyhow::Error::from)
+            .context("Failed to load config.toml")
     }
 }

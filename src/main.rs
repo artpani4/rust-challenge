@@ -7,7 +7,7 @@ fn main() -> Result<()> {
     let config = GlobalConfig::load();
 
     let generator = DefaultTransferGenerator {
-        config: config.generator.clone(),
+        config: config?.generator.clone(),
     };
     let transfers = generator.generate(10)?;
     // for t in transfers.iter() {
