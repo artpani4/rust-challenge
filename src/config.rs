@@ -15,6 +15,7 @@ pub struct GeneratorConfig {
     pub min_price: f64,
     pub max_price: f64,
     pub max_age_secs: u64,
+    pub address_pool_amount: usize,
 }
 
 impl Default for GeneratorConfig {
@@ -25,6 +26,7 @@ impl Default for GeneratorConfig {
             min_price: 0.1,
             max_price: 2.0,
             max_age_secs: 86_400 * 30,
+            address_pool_amount: 2000,
         }
     }
 }

@@ -1,23 +1,17 @@
+use crate::address::generate_address_pool;
 use crate::config::GeneratorConfig;
 use crate::model::Transfer;
 use anyhow::Context;
-use rand::{distributions::Alphanumeric, seq::SliceRandom, Rng};
+use rand::{seq::SliceRandom, Rng};
 use std::time::{SystemTime, UNIX_EPOCH};
 use uuid::Uuid;
+
 pub trait TransferGenerator {
     fn generate(&self, count: usize) -> anyhow::Result<Vec<Transfer>>;
 }
 
 pub struct DefaultTransferGenerator {
     pub config: GeneratorConfig,
-}
-
-impl Default for DefaultTransferGenerator {
-    fn default() -> Self {
-        Self {
-            config: GeneratorConfig::default(),
-        }
-    }
 }
 
 impl TransferGenerator for DefaultTransferGenerator {
@@ -28,7 +22,7 @@ impl TransferGenerator for DefaultTransferGenerator {
             .context("sth wrong with system time (< UNIX_EPOCH)")?
             .as_secs();
 
-        let address_pool = generate_adress_pool(&mut rng, 1000);
+        let address_pool = generate_address_pool(&mut rng, self.config.address_pool_amount);
 
         let transfers = (0..count)
             .filter_map(|_| {
@@ -53,21 +47,4 @@ impl TransferGenerator for DefaultTransferGenerator {
             .collect();
         Ok(transfers)
     }
-}
-
-fn rand_address(rng: &mut impl Rng) -> String {
-    let suffix: String = rng
-        .sample_iter(&Alphanumeric)
-        .take(10)
-        .map(char::from)
-        .collect();
-    format!("0x{}", suffix)
-}
-
-fn generate_adress_pool(rng: &mut impl Rng, size: usize) -> Vec<String> {
-    (0..size).map(|_| rand_address(rng)).collect()
-}
-
-pub fn generate_transfers(count: usize) -> anyhow::Result<Vec<Transfer>> {
-    Ok(DefaultTransferGenerator::default().generate(count)?)
 }

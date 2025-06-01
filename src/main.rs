@@ -10,12 +10,15 @@ fn main() -> Result<()> {
         config: config.generator.clone(),
     };
 
-    let transfers = generator.generate(10_000)?;
-    let stats = calculate_user_stats(&transfers);
-
-    for stat in stats.iter().take(10) {
-        println!("{:?}", stat);
+    let transfers = generator.generate(10)?;
+    for t in transfers.iter() {
+        println!("{:?}", t);
     }
+    // let stats = calculate_user_stats(&transfers);
+
+    // for stat in stats.iter().take(10) {
+    //     println!("{:?}", stat);
+    // }
 
     Ok(())
 }
