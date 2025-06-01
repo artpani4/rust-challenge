@@ -24,27 +24,26 @@ impl TransferGenerator for DefaultTransferGenerator {
 
         let address_pool = generate_address_pool(&mut rng, self.config.address_pool_amount);
 
-        let transfers = (0..count)
-            .filter_map(|_| {
-                let from = address_pool.choose(&mut rng)?.clone();
-                let to = address_pool.choose(&mut rng)?.clone();
-                if from == to {
-                    return None;
-                }
-                let amount = rng.gen_range(self.config.min_amount..self.config.max_amount);
-                let usd_price = rng.gen_range(self.config.min_price..self.config.max_price);
-                let ts = now - rng.gen_range(0..self.config.max_age_secs);
-                Some(Transfer {
-                    id: Uuid::new_v4(),
-                    ts,
-                    from,
-                    to,
-                    amount,
-                    usd_price,
-                })
-            })
-            .take(count)
-            .collect();
+        let mut transfers = Vec::with_capacity(count);
+        while transfers.len() < count {
+            let from = address_pool.choose(&mut rng).unwrap().clone();
+            let to = address_pool.choose(&mut rng).unwrap().clone();
+            if from == to {
+                continue;
+            }
+            let amount = rng.gen_range(self.config.min_amount..self.config.max_amount);
+            let usd_price = rng.gen_range(self.config.min_price..self.config.max_price);
+            let ts = now - rng.gen_range(0..self.config.max_age_secs);
+            transfers.push(Transfer {
+                id: Uuid::new_v4(),
+                ts,
+                from,
+                to,
+                amount,
+                usd_price,
+            });
+        }
+
         Ok(transfers)
     }
 }
