@@ -1,8 +1,10 @@
+use clickhouse::Row;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Row)]
 pub struct Transfer {
+    #[serde(with = "clickhouse::serde::uuid")]
     pub id: Uuid,
     pub ts: u64,
     pub from: String,

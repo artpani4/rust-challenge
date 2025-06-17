@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use figment::{
-    providers::{Format, Toml},
+    providers::{Env, Format, Serialized, Toml},
     Figment,
 };
 use log::info;
@@ -9,6 +9,7 @@ use serde::Deserialize;
 #[derive(Debug, Deserialize)]
 pub struct GlobalConfig {
     pub generator: GeneratorConfig,
+    pub clickhouse: ClickhouseConfig,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -21,27 +22,29 @@ pub struct GeneratorConfig {
     pub address_pool_amount: usize,
 }
 
-impl Default for GeneratorConfig {
-    fn default() -> Self {
-        Self {
-            min_amount: 1.0,
-            max_amount: 1000.0,
-            min_price: 0.1,
-            max_price: 2.0,
-            max_age_secs: 86_400 * 30,
-            address_pool_amount: 2000,
-        }
-    }
+#[derive(Debug, Clone, Deserialize)]
+pub struct ClickhouseConfig {
+    pub url: String,
+    pub user: String,
+    pub password: String,
+    pub database: String,
 }
 
 impl GlobalConfig {
     pub fn load() -> Result<Self> {
-        info!("Loading configuration from config.toml");
+        info!("Loading configuration");
 
-        Figment::new()
-            .merge(Toml::file("config.toml"))
+        let base = Figment::new().merge(Toml::file("config.toml"));
+
+        let clickhouse: ClickhouseConfig = Figment::new()
+            .merge(Env::prefixed("CLICKHOUSE_"))
             .extract()
-            .map_err(anyhow::Error::from)
-            .context("Failed to load config.toml")
+            .context("Failed to load clickhouse config")?;
+
+        let mut config: GlobalConfig = base.extract().context("Failed to load config.toml")?;
+
+        config.clickhouse = clickhouse;
+
+        Ok(config)
     }
 }
