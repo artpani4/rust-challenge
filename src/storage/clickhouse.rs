@@ -42,6 +42,20 @@ impl ClickhouseStorage {
         Self { client }
     }
 
+    pub async fn read_all_transfers(&self) -> clickhouse::error::Result<Vec<Transfer>> {
+        self.client
+            .query("SELECT id, ts, from, to, amount, usd_price FROM transfers")
+            .fetch_all::<Transfer>()
+            .await
+    }
+
+    pub async fn truncate_table(&self) -> clickhouse::error::Result<()> {
+        self.client
+            .query("TRUNCATE TABLE IF EXISTS transfers")
+            .execute()
+            .await
+    }
+
     pub async fn create_table(&self) -> clickhouse::error::Result<()> {
         self.client
             .query(
